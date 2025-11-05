@@ -217,6 +217,3 @@ Run unit tests and view coverage:
 npm run test-without-reporting
 ```
 
-## 📄 License
-
-[MIT](./LICENSE) © [Anand Chowdhary](https://anandchowdhary.com)
