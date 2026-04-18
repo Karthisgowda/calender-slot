@@ -36,8 +36,10 @@ export type Strategy =
   | "heavy-evenings"
   | "heavy-mondays"
   | "heavy-tuesdays"
+  | "heavy-thursdays"
   | "heavy-wednesdays"
   | "heavy-fridays"
+  | "heavy-saturdays"
   | "heavy-saturday"
   | "heavy-sundays";
 
@@ -92,8 +94,11 @@ export const weightedItemFromArray = (
     "friday",
     "saturday",
   ].forEach((day, dayIndex) => {
+    const strategyName =
+      day === "saturday" ? "heavy-saturday" : (`heavy-${day}s` as Strategy);
     if (
-      strategies.includes(`heavy-${day}s` as Strategy) &&
+      (strategies.includes(strategyName) ||
+        strategies.includes(`heavy-${day}s` as Strategy)) &&
       params.daily?.timezone
     )
       addExtraWeight((array, index) =>
@@ -114,14 +119,15 @@ export const weightedItemFromArray = (
     addExtraWeight((array, index) =>
       moment.tz(array[index].start, params.daily?.timezone ?? "").hours() >
         11 &&
-      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() < 4
+      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() < 17
         ? 1
         : 0
     );
   if (strategies.includes("heavy-evenings") && params.daily?.timezone)
     addExtraWeight((array, index) =>
-      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() > 3 &&
-      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() < 6
+      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() >
+        16 &&
+      moment.tz(array[index].start, params.daily?.timezone ?? "").hours() < 23
         ? 1
         : 0
     );
@@ -194,7 +200,9 @@ export const getEventsFromSingleCalendar = async ({
         timeMax: to ? moment(to).toISOString() : undefined,
         auth: auth ?? oauth2Client,
         calendarId: calendarId ?? "primary",
-        maxResults: 3,
+        maxResults: 2500,
+        singleEvents: true,
+        orderBy: "startTime",
       })
     ).data.items || []
   );

@@ -105,6 +105,9 @@ dist
 
 # VS Code config
 .vscode/
+.vercel/
 
 # Built files
 dist/
+
+.vercel

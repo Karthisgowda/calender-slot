@@ -1,25 +1,97 @@
-import { getSlots } from "./index";
 import moment from "moment-timezone";
+import {
+  getEventsFromSingleCalendar,
+  weightedItemFromArray,
+  Slot,
+} from "./index";
 
-const test = async () => {
-  const result = await getSlots({
-    slotDuration: 30,
-    log: true,
-    slots: 3,
-    from: moment(),
-    to: moment().add(3, "day").endOf("day"),
-    days: [1, 2, 3, 4, 5],
-    calendarId: "primary",
-    daily: {
-      timezone: "Asia/Kolkata",
-      from: [12],
-      to: [16],
-    },
+describe("weightedItemFromArray", () => {
+  const originalRandom = Math.random;
+
+  afterEach(() => {
+    Math.random = originalRandom;
   });
-  console.log(
-    "RESULT",
-    result.map((i) => i.start.toLocaleString())
-  );
-};
 
-test();
+  it("weights afternoon slots into the candidate pool", () => {
+    const slots: Slot[] = [
+      {
+        start: new Date("2026-04-20T04:00:00.000Z"),
+        end: new Date("2026-04-20T04:30:00.000Z"),
+      },
+      {
+        start: new Date("2026-04-20T08:00:00.000Z"),
+        end: new Date("2026-04-20T08:30:00.000Z"),
+      },
+    ];
+    Math.random = jest.fn(() => 0.99);
+
+    const slot = weightedItemFromArray(
+      {
+        from: moment("2026-04-20T00:00:00.000Z"),
+        to: moment("2026-04-21T00:00:00.000Z"),
+        daily: { timezone: "Asia/Kolkata" },
+        weight: 5,
+      },
+      [...slots],
+      ["heavy-afternoons"]
+    );
+
+    expect(slot).toEqual(slots[1]);
+  });
+
+  it("supports evening and legacy saturday strategies", () => {
+    const slots: Slot[] = [
+      {
+        start: new Date("2026-04-18T04:00:00.000Z"),
+        end: new Date("2026-04-18T04:30:00.000Z"),
+      },
+      {
+        start: new Date("2026-04-18T13:00:00.000Z"),
+        end: new Date("2026-04-18T13:30:00.000Z"),
+      },
+    ];
+    Math.random = jest.fn(() => 0.99);
+
+    const slot = weightedItemFromArray(
+      {
+        from: moment("2026-04-18T00:00:00.000Z"),
+        to: moment("2026-04-19T00:00:00.000Z"),
+        daily: { timezone: "Asia/Kolkata" },
+        weight: 5,
+      },
+      [...slots],
+      ["heavy-evenings", "heavy-saturday"]
+    );
+
+    expect(slot).toEqual(slots[1]);
+  });
+});
+
+describe("getEventsFromSingleCalendar", () => {
+  it("requests a complete ordered calendar window", async () => {
+    const list = jest.fn().mockResolvedValue({ data: { items: [] } });
+    const calendar = {
+      events: {
+        list,
+      },
+    } as any;
+
+    await getEventsFromSingleCalendar({
+      from: moment("2026-04-20T00:00:00.000Z"),
+      to: moment("2026-04-21T00:00:00.000Z"),
+      calendar,
+      calendarId: "primary",
+      auth: "token",
+    });
+
+    expect(list).toHaveBeenCalledWith(
+      expect.objectContaining({
+        calendarId: "primary",
+        auth: "token",
+        maxResults: 2500,
+        orderBy: "startTime",
+        singleEvents: true,
+      })
+    );
+  });
+});

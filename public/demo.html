@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar Slots Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/demo.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Live availability playground</p>
+        <h1>Test the calendar engine in your browser.</h1>
+        <p class="lede">
+          This demo runs on Vercel and uses the library in this repository to
+          recommend bookable time slots.
+        </p>
+      </section>
+
+      <section class="panel">
+        <form id="slot-form" class="grid">
+          <label>
+            Start date
+            <input id="from" name="from" type="date" required />
+          </label>
+          <label>
+            End date
+            <input id="to" name="to" type="date" required />
+          </label>
+          <label>
+            Timezone
+            <input id="timezone" name="timezone" type="text" value="Asia/Kolkata" />
+          </label>
+          <label>
+            Slot duration (minutes)
+            <input
+              id="slotDuration"
+              name="slotDuration"
+              type="number"
+              min="15"
+              step="15"
+              value="30"
+            />
+          </label>
+          <label>
+            Daily start hour
+            <input id="dailyFromHour" name="dailyFromHour" type="number" min="0" max="23" value="9" />
+          </label>
+          <label>
+            Daily end hour
+            <input id="dailyToHour" name="dailyToHour" type="number" min="0" max="23" value="18" />
+          </label>
+          <label>
+            Requested slots
+            <input id="slots" name="slots" type="number" min="1" max="12" value="6" />
+          </label>
+          <label>
+            Padding (minutes)
+            <input id="padding" name="padding" type="number" min="0" max="120" value="0" />
+          </label>
+
+          <fieldset class="choice-group">
+            <legend>Preferred weekdays</legend>
+            <label><input type="checkbox" name="days" value="1" checked /> Mon</label>
+            <label><input type="checkbox" name="days" value="2" checked /> Tue</label>
+            <label><input type="checkbox" name="days" value="3" checked /> Wed</label>
+            <label><input type="checkbox" name="days" value="4" checked /> Thu</label>
+            <label><input type="checkbox" name="days" value="5" checked /> Fri</label>
+          </fieldset>
+
+          <fieldset class="choice-group">
+            <legend>Bias the results</legend>
+            <label><input type="checkbox" name="strategies" value="heavy-mornings" /> Morning</label>
+            <label><input type="checkbox" name="strategies" value="heavy-afternoons" /> Afternoon</label>
+            <label><input type="checkbox" name="strategies" value="heavy-evenings" /> Evening</label>
+          </fieldset>
+
+          <button type="submit" class="action">Generate slots</button>
+        </form>
+      </section>
+
+      <section class="panel results-panel">
+        <div class="results-header">
+          <h2>Suggested availability</h2>
+          <p id="status">Choose a range and generate slots.</p>
+        </div>
+        <div id="results" class="results"></div>
+      </section>
+    </main>
+
+    <script src="/demo.js"></script>
+  </body>
+  </html>
